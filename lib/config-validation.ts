@@ -46,7 +46,18 @@ export function getGmailSetupInstructions(): string[] {
     '2. Create or select a project',
     '3. Enable the Gmail API',
     '4. Create OAuth 2.0 credentials (Web application)',
-    '5. Add redirect URI: http://localhost:3000/api/auth/gmail',
+    '5. Add redirect URI: https://mcpilot-eta.vercel.app/api/auth/gmail',
+    '6. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local',
+  ];
+}
+
+export function getGoogleCalendarSetupInstructions(): string[] {
+  return [
+    '1. Go to Google Cloud Console (https://console.cloud.google.com/)',
+    '2. Create or select a project',
+    '3. Enable the Google Calendar API',
+    '4. Create OAuth 2.0 credentials (Web application)',
+    '5. Add redirect URI: https://mcpilot-eta.vercel.app/api/auth/google-calendar',
     '6. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local',
   ];
 }

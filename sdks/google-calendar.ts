@@ -80,7 +80,7 @@ export class GoogleCalendarService {
     this.baseUrl = 'https://server.smithery.ai/@goldk3y/google-calendar-mcp';
     this.clientId = config.clientId;
     this.clientSecret = config.clientSecret;
-    this.redirectUri = config.redirectUri || 'http://localhost:3000/oauth2callback';
+    this.redirectUri = config.redirectUri || 'http://localhost:3000/api/auth/google-calendar';
     this.refreshToken = config.refreshToken;
   }
 

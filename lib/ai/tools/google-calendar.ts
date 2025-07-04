@@ -194,7 +194,7 @@ async function executeGoogleCalendarTool(
         config: { 
           clientId,
           clientSecret,
-          redirectUri: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth2callback`,
+          redirectUri: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/google-calendar`,
           refreshToken,
         }, 
         apiKey: smitheryApiKey
