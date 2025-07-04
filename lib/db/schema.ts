@@ -9,12 +9,15 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
+  gmailRefreshToken: text('gmailRefreshToken'),
+  googleCalendarRefreshToken: text('googleCalendarRefreshToken'),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -168,3 +171,16 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const gmailSearchHistory = pgTable('gmail_search_history', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  query: text('query').notNull(),
+  timestamp: timestamp('timestamp').defaultNow().notNull(),
+  resultCount: integer('result_count').default(0),
+  executionTime: integer('execution_time_ms').default(0),
+});
+
+export type GmailSearchHistory = typeof gmailSearchHistory.$inferSelect;

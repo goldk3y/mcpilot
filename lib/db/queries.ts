@@ -10,6 +10,7 @@ import {
   gte,
   inArray,
   lt,
+  sql,
   type SQL,
 } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -27,6 +28,7 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  gmailSearchHistory,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -54,12 +56,78 @@ export async function getUser(email: string): Promise<Array<User>> {
 }
 
 export async function createUser(email: string, password: string) {
-  const hashedPassword = generateHashedPassword(password);
+  const passwordHash = await generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    return await db.insert(user).values({
+      id: generateUUID(),
+      email,
+      password: passwordHash,
+    });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to create user');
+  }
+}
+
+export async function updateUserGmailToken(userId: string, refreshToken: string | null): Promise<void> {
+  try {
+    await db
+      .update(user)
+      .set({ gmailRefreshToken: refreshToken })
+      .where(eq(user.id, userId));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database', 
+      'Failed to update Gmail refresh token'
+    );
+  }
+}
+
+export async function getUserGmailToken(userId: string): Promise<string | null> {
+  try {
+    const result = await db
+      .select({ gmailRefreshToken: user.gmailRefreshToken })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+    
+    return result[0]?.gmailRefreshToken || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get Gmail refresh token'
+    );
+  }
+}
+
+export async function updateUserGoogleCalendarToken(userId: string, refreshToken: string | null): Promise<void> {
+  try {
+    await db
+      .update(user)
+      .set({ googleCalendarRefreshToken: refreshToken })
+      .where(eq(user.id, userId));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update Google Calendar refresh token'
+    );
+  }
+}
+
+export async function getUserGoogleCalendarToken(userId: string): Promise<string | null> {
+  try {
+    const result = await db
+      .select({ googleCalendarRefreshToken: user.googleCalendarRefreshToken })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+    
+    return result[0]?.googleCalendarRefreshToken || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get Google Calendar refresh token'
+    );
   }
 }
 
@@ -533,6 +601,80 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+export async function saveGmailSearchHistory({
+  userId,
+  query,
+  resultCount,
+  executionTime,
+}: {
+  userId: string;
+  query: string;
+  resultCount: number;
+  executionTime: number;
+}): Promise<void> {
+  try {
+    await db.insert(gmailSearchHistory).values({
+      userId,
+      query,
+      resultCount,
+      executionTime,
+    });
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save Gmail search history'
+    );
+  }
+}
+
+export async function getGmailSearchHistory(userId: string, limit = 10): Promise<Array<{ query: string; timestamp: Date; resultCount: number }>> {
+  try {
+    const results = await db
+      .select({
+        query: gmailSearchHistory.query,
+        timestamp: gmailSearchHistory.timestamp,
+        resultCount: gmailSearchHistory.resultCount,
+      })
+      .from(gmailSearchHistory)
+      .where(eq(gmailSearchHistory.userId, userId))
+      .orderBy(desc(gmailSearchHistory.timestamp))
+      .limit(limit);
+    
+    return results.map(result => ({
+      ...result,
+      timestamp: result.timestamp || new Date(),
+      resultCount: result.resultCount ?? 0,
+    }));
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get Gmail search history'
+    );
+  }
+}
+
+export async function getPopularGmailSearches(userId: string, limit = 5): Promise<Array<{ query: string; count: number }>> {
+  try {
+    const results = await db
+      .select({
+        query: gmailSearchHistory.query,
+        count: sql<number>`count(*)`,
+      })
+      .from(gmailSearchHistory)
+      .where(eq(gmailSearchHistory.userId, userId))
+      .groupBy(gmailSearchHistory.query)
+      .orderBy(desc(sql`count(*)`))
+      .limit(limit);
+    
+    return results;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get popular Gmail searches'
     );
   }
 }

@@ -60,3 +60,117 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+# MCPilot
+
+MCPilot is a tool for running MCP servers with AI-powered email automation.
+
+## Getting Started
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Required for MCP server registry
+SMITHERY_API_KEY=your_smithery_api_key
+
+# Required for Gmail MCP integration
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+
+# NextAuth configuration (required for user sessions)
+NEXTAUTH_URL=http://localhost:3001
+NEXTAUTH_SECRET=your_nextauth_secret
+```
+
+### Gmail MCP Setup
+
+To enable Gmail functionality, follow these steps:
+
+#### 1. Google Cloud Console Setup
+
+1. **Go to [Google Cloud Console](https://console.cloud.google.com/)**
+2. **Create or select a project**
+3. **Enable the Gmail API**:
+   - Navigate to "APIs & Services" → "Library"
+   - Search for "Gmail API" and click "Enable"
+
+4. **Create OAuth 2.0 Credentials**:
+   - Go to "APIs & Services" → "Credentials"
+   - Click "Create Credentials" → "OAuth client ID"
+   - If prompted, configure the OAuth consent screen first:
+     - Choose "External" user type
+     - Fill in app name, user support email, and developer contact
+     - Add scopes: `../auth/gmail.readonly`, `../auth/gmail.send`, `../auth/gmail.modify`, `../auth/gmail.compose`, `../auth/gmail.labels`, `../auth/gmail.settings.basic`, `../auth/gmail.settings.sharing`
+   - For the OAuth client ID:
+     - Application type: "Web application"
+     - Name: "MCPilot Gmail Integration"
+     - Authorized redirect URIs: `http://localhost:3001/api/auth/gmail`
+
+5. **Download the credentials JSON file**
+
+#### 2. Extract OAuth Credentials
+
+From the downloaded JSON file, copy:
+- `client_id` → Set as `GOOGLE_CLIENT_ID` in `.env.local`
+- `client_secret` → Set as `GOOGLE_CLIENT_SECRET` in `.env.local`
+
+#### 3. User Authentication Flow
+
+Each user needs to connect their own Gmail account:
+
+1. Start the development server: `npm run dev`
+2. Open the MCP dropdown in the top navigation
+3. Click "Configure Gmail Access"
+4. Complete the Google OAuth flow
+5. Grant the requested permissions
+
+The Gmail MCP will then be available with 60+ email automation tools.
+
+## Available MCP Servers
+
+- **Exa Search**: Advanced web search and content discovery
+- **Gmail MCP**: Comprehensive Gmail integration with tools for:
+  - Sending and receiving emails
+  - Managing drafts and labels
+  - Searching and organizing messages
+  - Handling attachments
+  - Email automation and filtering
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3001](http://localhost:3001) to view the application.
+
+## Features
+
+- ✨ Dynamic MCP server integration via Smithery Registry
+- 🔐 Secure OAuth flow for Gmail authentication
+- 📧 60+ Gmail automation tools through MCP
+- 🔄 Real-time server status and connection management
+- 🛡️ Automatic fallback for offline scenarios
+- 👥 Per-user authentication (each user connects their own Gmail)
+
+## Gmail MCP Tools
+
+Once connected, users get access to powerful email automation including:
+
+- **Email Management**: Send, read, search, organize
+- **Draft Handling**: Create, edit, send drafts
+- **Label Management**: Create, modify, organize labels
+- **Thread Operations**: Manage email conversations
+- **Advanced Features**: Filters, forwarding, vacation responder
+- **Attachments**: Download and manage file attachments
+- **Settings**: Modify Gmail preferences and configurations
+
+## Security
+
+- OAuth 2.0 flow ensures secure Gmail access
+- Each user connects their own Google account
+- Refresh tokens are handled securely
+- Minimal required permissions (only Gmail-related scopes)

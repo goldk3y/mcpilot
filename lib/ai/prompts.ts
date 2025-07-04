@@ -33,7 +33,7 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  'You are a friendly assistant! Keep your responses concise and helpful, except when conducting research or providing search results - in those cases, provide comprehensive, detailed analysis and insights from the information you find.';
 
 export interface RequestHints {
   latitude: Geo['latitude'];
@@ -42,13 +42,52 @@ export interface RequestHints {
   country: Geo['country'];
 }
 
-export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
+// Get current date and time information for AI context
+export const getCurrentDateTimeContext = () => {
+  const now = new Date();
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  return {
+    currentDateTime: now.toISOString(),
+    localDateTime: now.toLocaleString('en-US', { 
+      timeZone,
+      dateStyle: 'full',
+      timeStyle: 'long'
+    }),
+    timeZone,
+    dayOfWeek: now.toLocaleDateString('en-US', { weekday: 'long' }),
+    currentYear: now.getFullYear(),
+    currentMonth: now.toLocaleDateString('en-US', { month: 'long' }),
+    currentDate: now.getDate(),
+  };
+};
+
+export const getRequestPromptFromHints = (requestHints: RequestHints) => {
+  const dateTimeContext = getCurrentDateTimeContext();
+  
+  return `\
 About the origin of user's request:
 - lat: ${requestHints.latitude}
 - lon: ${requestHints.longitude}
 - city: ${requestHints.city}
 - country: ${requestHints.country}
+
+Current date and time context:
+- Current date/time: ${dateTimeContext.currentDateTime}
+- Local time: ${dateTimeContext.localDateTime}
+- Time zone: ${dateTimeContext.timeZone}
+- Today is: ${dateTimeContext.dayOfWeek}, ${dateTimeContext.currentMonth} ${dateTimeContext.currentDate}, ${dateTimeContext.currentYear}
+
+IMPORTANT TIMEZONE HANDLING:
+- When users mention times like "3pm", "2:30", "tomorrow at 10am", they mean their LOCAL timezone (${dateTimeContext.timeZone})
+- For calendar events, convert all user-specified times to their local timezone, NOT UTC
+- When creating datetime strings for calendar events, use the user's local timezone
+- Example: If user says "3pm" and they're in America/Los_Angeles, create the event for 3pm Pacific Time
+
+When users mention "today", "tomorrow", "this week", "next week", etc., use this current date as reference.
+For calendar events, always use current or future dates unless the user specifically requests a past date.
 `;
+};
 
 export const systemPrompt = ({
   selectedChatModel,

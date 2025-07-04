@@ -50,6 +50,20 @@
       "when": 1746118166211,
       "tag": "0006_marvelous_frog_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1751576606586,
+      "tag": "0007_deep_masque",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1751610711835,
+      "tag": "0008_add_google_calendar_token",
+      "breakpoints": true
     }
   ]
 }

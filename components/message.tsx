@@ -212,6 +212,21 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'exaSearch' || toolName === 'exaGetContents' || 
+                          toolName === 'exaResearchPapers' || toolName === 'exaCompanyResearch' || 
+                          toolName === 'exaCompetitorFinder' || toolName === 'exaLinkedInSearch' || 
+                          toolName === 'exaWikipediaSearch' || toolName === 'exaGitHubSearch' ||
+                          toolName === 'sendMessage' || toolName === 'listMessages' ||
+                          toolName === 'getMessage' || toolName === 'createDraft' ||
+                          toolName === 'listLabels' || toolName === 'createLabel' ||
+                          toolName === 'searchEmails' || toolName === 'semanticEmailSearch' ||
+                          toolName === 'enhancedEmailSearch' ? null : 
+                      toolName === 'createEvent' || toolName === 'listEvents' || 
+                          toolName === 'listCalendars' || toolName === 'checkCalendarAuthStatus' ||
+                          toolName === 'debugCalendarConnection' ? (
+                        <div className="bg-muted/50 rounded-lg p-4 border">
+                          <Markdown>{sanitizeText(result)}</Markdown>
+                        </div>
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>
                       )}

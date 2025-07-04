@@ -23,6 +23,16 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { 
+  exaSearch, 
+  exaGetContents,
+  exaResearchPapers,
+  exaCompanyResearch,
+  exaCompetitorFinder,
+  exaLinkedInSearch,
+  exaWikipediaSearch,
+  exaGitHubSearch
+} from '@/lib/ai/tools/exa-search';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -36,6 +46,18 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import {
+  sendMessage,
+  listMessages,
+  getMessage,
+  createDraft,
+  listLabels,
+  createLabel,
+  searchEmails,
+  semanticEmailSearch,
+  enhancedEmailSearch,
+} from '@/lib/ai/tools/gmail';
+import { googleCalendarTools } from '@/lib/ai/tools/google-calendar';
 
 export const maxDuration = 60;
 
@@ -159,6 +181,30 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'exaSearch',
+                  'exaGetContents',
+                  'exaResearchPapers',
+                  'exaCompanyResearch',
+                  'exaCompetitorFinder',
+                  'exaLinkedInSearch',
+                  'exaWikipediaSearch',
+                  'exaGitHubSearch',
+                  'sendMessage',
+                  'listMessages',
+                  'getMessage',
+                  'createDraft',
+                  'listLabels',
+                  'createLabel',
+                  'searchEmails',
+                  'semanticEmailSearch',
+                  'enhancedEmailSearch',
+                  'generateCalendarOAuthUrl',
+                  'exchangeCalendarAuthCode',
+                  'checkCalendarAuthStatus',
+                  'listCalendars',
+                  'listEvents',
+                  'createEvent',
+                  'debugCalendarConnection',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -170,6 +216,30 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            exaSearch,
+            exaGetContents,
+            exaResearchPapers,
+            exaCompanyResearch,
+            exaCompetitorFinder,
+            exaLinkedInSearch,
+            exaWikipediaSearch,
+            exaGitHubSearch,
+            sendMessage: sendMessage(session.user.id),
+            listMessages: listMessages(session.user.id),
+            getMessage: getMessage(session.user.id),
+            createDraft: createDraft(session.user.id),
+            listLabels: listLabels(session.user.id),
+            createLabel: createLabel(session.user.id),
+            searchEmails: searchEmails(session.user.id),
+            semanticEmailSearch: semanticEmailSearch(session.user.id),
+            enhancedEmailSearch: enhancedEmailSearch(session.user.id),
+            generateCalendarOAuthUrl: googleCalendarTools.generateCalendarOAuthUrl,
+            exchangeCalendarAuthCode: googleCalendarTools.exchangeCalendarAuthCode,
+            checkCalendarAuthStatus: googleCalendarTools.checkCalendarAuthStatus(session.user.id),
+            listCalendars: googleCalendarTools.listCalendars(session.user.id),
+            listEvents: googleCalendarTools.listEvents(session.user.id),
+            createEvent: googleCalendarTools.createEvent(session.user.id),
+            debugCalendarConnection: googleCalendarTools.debugCalendarConnection(session.user.id),
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {
